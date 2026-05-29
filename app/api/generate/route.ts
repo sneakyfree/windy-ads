@@ -34,10 +34,17 @@ export async function POST(req: NextRequest) {
   }
 
   const provider = getProvider();
+  // User-chosen voice wins; otherwise fall back to the actor's provider default.
+  const chosenVoice =
+    typeof voiceId === "string" && voiceId
+      ? voiceId
+      : provider.name === "heygen"
+        ? actor.heygenVoiceId
+        : undefined;
   const input: GenerateInput = {
     actorId: resolveProviderActorId(actor, provider.name),
     script: script.trim(),
-    voiceId: typeof voiceId === "string" ? voiceId : undefined,
+    voiceId: chosenVoice,
     aspect: aspect === "16:9" || aspect === "1:1" ? aspect : "9:16",
   };
 

@@ -8,6 +8,10 @@ import type { GenerateInput, GenerateResult, JobState, JobStatus, VideoProvider 
  */
 const BASE = "https://api.heygen.com";
 
+// HeyGen requires a voice_id for text input. Used when neither the request nor
+// the actor supplies one (e.g. demo actor with no voice mapped).
+const DEFAULT_VOICE_ID = "d2f4f24783d04e22ab49ee8fdc3715e0"; // "Chill Brian" (English)
+
 function dims(aspect: GenerateInput["aspect"]) {
   switch (aspect) {
     case "16:9":
@@ -34,9 +38,11 @@ export class HeyGenProvider implements VideoProvider {
       video_inputs: [
         {
           character: { type: "avatar", avatar_id: input.actorId, avatar_style: "normal" },
-          voice: input.voiceId
-            ? { type: "text", input_text: input.script, voice_id: input.voiceId }
-            : { type: "text", input_text: input.script },
+          voice: {
+            type: "text",
+            input_text: input.script,
+            voice_id: input.voiceId || DEFAULT_VOICE_ID,
+          },
         },
       ],
       dimension: { width, height },

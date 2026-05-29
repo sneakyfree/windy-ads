@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { listVoices } from "@/lib/elevenlabs";
+import { getVoiceCatalog } from "@/lib/voices";
 
 export async function GET() {
-  const voices = await listVoices();
+  const voices = await getVoiceCatalog();
   return NextResponse.json({ voices });
 }
