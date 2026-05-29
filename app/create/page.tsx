@@ -9,6 +9,8 @@ type Aspect = "9:16" | "16:9" | "1:1";
 
 export default function CreatePage() {
   const [actors, setActors] = useState<Actor[]>([]);
+  const [actorsLoading, setActorsLoading] = useState(true);
+  const [actorsError, setActorsError] = useState(false);
   const [voices, setVoices] = useState<Voice[]>([]);
   const [actorId, setActorId] = useState<string>("");
   const [voiceId, setVoiceId] = useState<string>("");
@@ -23,12 +25,19 @@ export default function CreatePage() {
 
   useEffect(() => {
     fetch("/api/actors")
-      .then((r) => r.json())
-      .then((d) => {
-        setActors(d.actors || []);
-        if (d.actors?.[0]) setActorId(d.actors[0].id);
+      .then((r) => {
+        if (!r.ok) throw new Error(`actors request failed (${r.status})`);
+        return r.json();
       })
-      .catch(() => {});
+      .then((d) => {
+        const list: Actor[] = d.actors || [];
+        setActors(list);
+        if (list[0]) setActorId(list[0].id);
+        // An empty roster is just as unusable as a failed fetch — surface it.
+        if (!list.length) setActorsError(true);
+      })
+      .catch(() => setActorsError(true))
+      .finally(() => setActorsLoading(false));
     fetch("/api/voices")
       .then((r) => r.json())
       .then((d) => setVoices(d.voices || []))
@@ -99,24 +108,46 @@ export default function CreatePage() {
           <section>
             <span className="mb-3 block text-sm font-semibold text-zinc-300">1 · Choose an actor</span>
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4" role="group" aria-label="Choose an actor">
-              {actors.map((a) => (
-                <button
-                  key={a.id}
-                  onClick={() => setActorId(a.id)}
-                  aria-label={`Select actor ${a.name}`}
-                  aria-pressed={actorId === a.id}
-                  className={`card overflow-hidden text-left transition ${
-                    actorId === a.id ? "ring-2 ring-accent" : "hover:border-accent/60"
-                  }`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={a.portrait} alt={a.name} className="aspect-square w-full object-cover" />
-                  <div className="px-2 py-1.5 text-xs">
-                    <div className="font-medium">{a.name}</div>
-                  </div>
-                </button>
-              ))}
+              {actorsLoading
+                ? // Skeleton tiles so the section never flashes empty while the
+                  // roster loads (QA gap G4).
+                  Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      aria-hidden
+                      className="card aspect-square w-full animate-pulse bg-edge/40"
+                    />
+                  ))
+                : actors.map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => setActorId(a.id)}
+                      aria-label={`Select actor ${a.name}`}
+                      aria-pressed={actorId === a.id}
+                      className={`card overflow-hidden text-left transition ${
+                        actorId === a.id ? "ring-2 ring-accent" : "hover:border-accent/60"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={a.portrait} alt={a.name} className="aspect-square w-full object-cover" />
+                      <div className="px-2 py-1.5 text-xs">
+                        <div className="font-medium">{a.name}</div>
+                      </div>
+                    </button>
+                  ))}
             </div>
+            {actorsError && (
+              <p className="mt-3 text-sm text-red-400">
+                Couldn&apos;t load the actor roster.{" "}
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="font-medium underline hover:text-red-300"
+                >
+                  Retry
+                </button>
+              </p>
+            )}
           </section>
 
           {/* Script */}
@@ -177,7 +208,7 @@ export default function CreatePage() {
             </div>
           </section>
 
-          <button onClick={onGenerate} disabled={busy || !script.trim()} className="btn-primary w-full py-4 text-base">
+          <button onClick={onGenerate} disabled={busy || !script.trim() || !actorId} className="btn-primary w-full py-4 text-base">
             {busy ? "Rendering…" : "Generate ad"}
           </button>
         </div>
