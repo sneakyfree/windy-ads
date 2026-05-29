@@ -7,6 +7,15 @@ import type { Voice } from "@/lib/elevenlabs";
 type Phase = "idle" | "submitting" | "rendering" | "done" | "error";
 type Aspect = "9:16" | "16:9" | "1:1";
 
+// Preview frame mirrors the chosen output aspect so the user sees the real
+// shape they'll get (QA gap G5 — was hardcoded 9:16, letterboxing 16:9/1:1
+// renders into a tall box). Full class strings kept static for Tailwind JIT.
+const ASPECT_FRAME: Record<Aspect, string> = {
+  "9:16": "aspect-[9/16]",
+  "1:1": "aspect-square",
+  "16:9": "aspect-video",
+};
+
 export default function CreatePage() {
   const [actors, setActors] = useState<Actor[]>([]);
   const [actorsLoading, setActorsLoading] = useState(true);
@@ -216,7 +225,7 @@ export default function CreatePage() {
         {/* Right: preview */}
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="card overflow-hidden">
-            <div className="flex aspect-[9/16] items-center justify-center bg-ink">
+            <div className={`flex ${ASPECT_FRAME[aspect]} items-center justify-center bg-ink`}>
               {phase === "done" && videoUrl ? (
                 <video src={videoUrl} controls autoPlay loop className="h-full w-full object-contain" />
               ) : busy ? (
