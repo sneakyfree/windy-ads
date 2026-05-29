@@ -97,12 +97,14 @@ export default function CreatePage() {
         <div className="space-y-8">
           {/* Actor picker */}
           <section>
-            <label className="mb-3 block text-sm font-semibold text-zinc-300">1 · Choose an actor</label>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            <span className="mb-3 block text-sm font-semibold text-zinc-300">1 · Choose an actor</span>
+            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4" role="group" aria-label="Choose an actor">
               {actors.map((a) => (
                 <button
                   key={a.id}
                   onClick={() => setActorId(a.id)}
+                  aria-label={`Select actor ${a.name}`}
+                  aria-pressed={actorId === a.id}
                   className={`card overflow-hidden text-left transition ${
                     actorId === a.id ? "ring-2 ring-accent" : "hover:border-accent/60"
                   }`}
@@ -119,8 +121,11 @@ export default function CreatePage() {
 
           {/* Script */}
           <section>
-            <label className="mb-3 block text-sm font-semibold text-zinc-300">2 · Write your script</label>
+            <label htmlFor="script" className="mb-3 block text-sm font-semibold text-zinc-300">
+              2 · Write your script
+            </label>
             <textarea
+              id="script"
               value={script}
               onChange={(e) => setScript(e.target.value)}
               maxLength={2500}
@@ -134,8 +139,11 @@ export default function CreatePage() {
           {/* Options */}
           <section className="grid gap-5 sm:grid-cols-2">
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">Voice</label>
+              <label htmlFor="voice" className="mb-2 block text-sm font-semibold text-zinc-300">
+                Voice
+              </label>
               <select
+                id="voice"
                 value={voiceId}
                 onChange={(e) => setVoiceId(e.target.value)}
                 className="w-full rounded-xl border border-edge bg-panel p-3 text-sm outline-none focus:border-accent"
@@ -150,12 +158,14 @@ export default function CreatePage() {
               </select>
             </div>
             <div>
-              <label className="mb-2 block text-sm font-semibold text-zinc-300">Aspect ratio</label>
-              <div className="flex gap-2">
+              <span className="mb-2 block text-sm font-semibold text-zinc-300">Aspect ratio</span>
+              <div className="flex gap-2" role="group" aria-label="Aspect ratio">
                 {(["9:16", "1:1", "16:9"] as Aspect[]).map((r) => (
                   <button
                     key={r}
                     onClick={() => setAspect(r)}
+                    aria-label={`Aspect ratio ${r}`}
+                    aria-pressed={aspect === r}
                     className={`flex-1 rounded-xl border px-3 py-3 text-sm ${
                       aspect === r ? "border-accent text-white" : "border-edge text-zinc-400"
                     }`}
