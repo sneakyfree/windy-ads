@@ -24,26 +24,32 @@ async function listHeyGenVoices(apiKey: string): Promise<Voice[]> {
     });
     if (!res.ok) return [];
     const json = await res.json();
-    const raw: any[] = json?.data?.voices ?? [];
-    // English only, named, deduped by display name, capped for a usable dropdown.
-    const seen = new Set<string>();
-    const out: Voice[] = [];
-    for (const v of raw) {
-      const lang = String(v.language || "").toLowerCase();
-      const name = String(v.name || "").trim();
-      if (!lang.startsWith("english") || !name) continue;
-      if (seen.has(name)) continue;
-      seen.add(name);
-      out.push({
-        voiceId: v.voice_id,
-        name,
-        labels: { gender: v.gender, accent: v.language },
-        previewUrl: v.preview_audio,
-      });
-      if (out.length >= 60) break;
-    }
-    return out;
+    return normalizeHeyGenVoices(json?.data?.voices ?? []);
   } catch {
     return [];
   }
+}
+
+/**
+ * English only, named, deduped by display name, capped at 60 for a usable
+ * dropdown. Pure — exported for unit testing.
+ */
+export function normalizeHeyGenVoices(raw: any[]): Voice[] {
+  const seen = new Set<string>();
+  const out: Voice[] = [];
+  for (const v of raw) {
+    const lang = String(v.language || "").toLowerCase();
+    const name = String(v.name || "").trim();
+    if (!lang.startsWith("english") || !name) continue;
+    if (seen.has(name)) continue;
+    seen.add(name);
+    out.push({
+      voiceId: v.voice_id,
+      name,
+      labels: { gender: v.gender, accent: v.language },
+      previewUrl: v.preview_audio,
+    });
+    if (out.length >= 60) break;
+  }
+  return out;
 }

@@ -18,6 +18,7 @@ export default function CreatePage() {
   const [phase, setPhase] = useState<Phase>("idle");
   const [progress, setProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string>("");
+  const [jobId, setJobId] = useState<string>("");
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -62,6 +63,7 @@ export default function CreatePage() {
     setPhase("submitting");
     setError("");
     setVideoUrl("");
+    setJobId("");
     setProgress(0);
     try {
       const r = await fetch("/api/generate", {
@@ -71,6 +73,7 @@ export default function CreatePage() {
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Generation request failed.");
+      setJobId(d.jobId);
       setPhase("rendering");
       poll(d.jobId);
     } catch (e: any) {
@@ -212,8 +215,8 @@ export default function CreatePage() {
               )}
             </div>
           </div>
-          {phase === "done" && videoUrl && (
-            <a href={videoUrl} download className="btn-ghost mt-4 w-full">
+          {phase === "done" && videoUrl && jobId && (
+            <a href={`/api/download/${encodeURIComponent(jobId)}`} download className="btn-ghost mt-4 w-full">
               ↓ Download video
             </a>
           )}

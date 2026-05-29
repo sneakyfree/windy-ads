@@ -15,7 +15,9 @@ const SAMPLE_VIDEOS = [
 ];
 
 // In-memory job store. Fine for a single dev instance; swap for KV/Redis in prod.
+// Bounded so a long-running process can't leak memory (QA gap G3).
 const jobs = new Map<string, { startedAt: number; videoUrl: string }>();
+const MAX_JOBS = 500;
 
 // Deterministic-ish id without Math.random (kept simple and dependency-free).
 let counter = 0;
@@ -30,6 +32,12 @@ export class MockProvider implements VideoProvider {
   async generate(input: GenerateInput): Promise<GenerateResult> {
     const jobId = makeId();
     const pick = SAMPLE_VIDEOS[counter % SAMPLE_VIDEOS.length];
+    // Evict oldest entries (insertion order) once over the cap.
+    while (jobs.size >= MAX_JOBS) {
+      const oldest = jobs.keys().next().value;
+      if (oldest === undefined) break;
+      jobs.delete(oldest);
+    }
     jobs.set(jobId, { startedAt: Date.now(), videoUrl: pick });
     return { jobId, provider: this.name };
   }
