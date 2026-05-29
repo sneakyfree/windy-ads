@@ -5,10 +5,13 @@ import type { GenerateInput, GenerateResult, JobState, VideoProvider } from "./t
  * for a few seconds then returns a royalty-free sample clip. Lets the entire
  * product be developed and demoed before wiring a paid provider.
  */
+// Verified cross-origin-playable in a <video> element (the old
+// storage.googleapis.com/gtv-videos-bucket URLs get ORB-blocked by Chromium
+// and render as a black player — see QA finding F2).
 const SAMPLE_VIDEOS = [
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-  "https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+  "https://media.w3.org/2010/05/sintel/trailer.mp4",
+  "https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4",
+  "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4",
 ];
 
 // In-memory job store. Fine for a single dev instance; swap for KV/Redis in prod.

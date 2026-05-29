@@ -52,6 +52,7 @@ export class HeyGenProvider implements VideoProvider {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(body),
+      cache: "no-store",
     });
     if (!res.ok) {
       throw new Error(`HeyGen generate failed (${res.status}): ${await res.text()}`);
@@ -65,6 +66,7 @@ export class HeyGenProvider implements VideoProvider {
   async status(jobId: string): Promise<JobState> {
     const res = await fetch(`${BASE}/v1/video_status.get?video_id=${encodeURIComponent(jobId)}`, {
       headers: this.headers(),
+      cache: "no-store", // polling — must never be cached (see QA finding F4)
     });
     if (!res.ok) {
       return { jobId, status: "failed", error: `status ${res.status}: ${await res.text()}` };

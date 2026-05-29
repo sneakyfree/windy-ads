@@ -178,10 +178,21 @@ export default function CreatePage() {
               ) : busy ? (
                 <div className="px-6 text-center">
                   <div className="mx-auto mb-4 h-1.5 w-40 overflow-hidden rounded-full bg-edge">
-                    <div className="h-full bg-accent transition-all" style={{ width: `${progress}%` }} />
+                    {progress > 0 ? (
+                      // Determinate: provider reports real progress (e.g. mock).
+                      <div className="h-full bg-accent transition-all" style={{ width: `${progress}%` }} />
+                    ) : (
+                      // Indeterminate: provider gives no progress (e.g. HeyGen) —
+                      // show a moving bar so it never reads as a stuck "0%".
+                      <div className="h-full w-1/3 animate-pulse rounded-full bg-accent" />
+                    )}
                   </div>
                   <p className="text-sm text-zinc-400">
-                    {phase === "submitting" ? "Submitting…" : `Rendering… ${progress}%`}
+                    {phase === "submitting"
+                      ? "Submitting…"
+                      : progress > 0
+                        ? `Rendering… ${progress}%`
+                        : "Rendering… this can take a minute"}
                   </p>
                 </div>
               ) : phase === "error" ? (

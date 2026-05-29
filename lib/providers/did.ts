@@ -37,6 +37,7 @@ export class DIDProvider implements VideoProvider {
       method: "POST",
       headers: this.headers(),
       body: JSON.stringify(body),
+      cache: "no-store",
     });
     if (!res.ok) {
       throw new Error(`D-ID generate failed (${res.status}): ${await res.text()}`);
@@ -49,6 +50,7 @@ export class DIDProvider implements VideoProvider {
   async status(jobId: string): Promise<JobState> {
     const res = await fetch(`${BASE}/talks/${encodeURIComponent(jobId)}`, {
       headers: this.headers(),
+      cache: "no-store", // polling — must never be cached (see QA finding F4)
     });
     if (!res.ok) {
       return { jobId, status: "failed", error: `status ${res.status}: ${await res.text()}` };
